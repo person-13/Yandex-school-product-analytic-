@@ -1,0 +1,13 @@
+SELECT user_id AS user_id_active, count(order_id) AS count_active
+  FROM active_plus ap
+  JOIN market_orders mo
+    ON mo.user_id = ap.user_id
+ WHERE ap.utc_dttm_from =<  mo.utc_creation_dttm
+   AND mo.utc_creation_dttm =< ap.utc_dttm_to
+ GROUP BY user_id
+
+SELECT user_id, count(order_id) AS count
+  FROM active_plus ap
+  JOIN market_orders mo
+    ON mo.user_id = ap.user_id
+ GROUP BY user_id
