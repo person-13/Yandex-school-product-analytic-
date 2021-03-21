@@ -1,13 +1,20 @@
-SELECT user_id AS user_id_active, count(order_id) AS count_active
+WITH purchases_plus_active AS (
+SELECT user_id AS user_id_active, count(mo.order_id) AS count_active
   FROM active_plus ap
   JOIN market_orders mo
     ON mo.user_id = ap.user_id
- WHERE ap.utc_dttm_from =<  mo.utc_creation_dttm
-   AND mo.utc_creation_dttm =< ap.utc_dttm_to
+ WHERE ap.utc_dttm_from <= mo.utc_creation_dttm
+   AND mo.utc_creation_dttm <= ap.utc_dttm_to
  GROUP BY user_id
-
-SELECT user_id, count(order_id) AS count
+), purchases AS (
+SELECT user_id, count(mo.order_id) AS count
   FROM active_plus ap
   JOIN market_orders mo
     ON mo.user_id = ap.user_id
  GROUP BY user_id
+)
+SELECT COUNT(ppa.user_id_active) AS total_count
+  FROM purchases_plus_active ppa
+  JOIN purchases p
+    ON ppa.user_id_active = p.user_id
+ WHERE ppa.count_active/p.count > 0.8
